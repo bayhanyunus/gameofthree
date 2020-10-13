@@ -1,0 +1,9 @@
+takeaway:
+  assignment:
+    gameofthree:
+      service:
+        rabbit-mq:
+          host: ${RABBIT_HOST:rabbitMQ}
+        redis:
+          host: ${REDIS_HOST:redis}
+          port: ${REDIS_PORT:6379}

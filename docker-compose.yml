@@ -1,0 +1,75 @@
+version: '3.1'
+
+services:
+  redis:
+    image: "redis"
+    command: redis-server
+    hostname: "redis"
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  rabbitMq:
+    image: "rabbitmq:3-management"
+    hostname: "rabbitMQ"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "QWEWQREWRTYUI"
+      RABBITMQ_DEFAULT_USER: "gameUser"
+      RABBITMQ_DEFAULT_PASS: "gameUserPassword"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 3s
+      timeout: 30s
+      retries: 30
+  player-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: player-1
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitMq:
+        condition: service_healthy
+    ports:
+      - 8081:8081
+      - 8091:8091
+    restart: unless-stopped
+    environment:
+      PORT: 8081
+      MANAGEMENT_PORT: 8091
+      SPRING_PROFILE_ENV: test
+      NEXT_PLAYER_BASE_URL: "http://player-2:8082"
+      RABBIT_QUEUE: "gameQueuePlayer-1"
+      RABBIT_ROUTING_KEY: "gameRoutingKeyPlayer-1"
+      RABBIT_EXHANGE: "gameExgangePlayer-1"
+  player-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: player-2
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitMq:
+        condition: service_healthy
+    ports:
+      - 8082:8082
+      - 8092:8092
+    restart: unless-stopped
+    environment:
+      PORT: 8082
+      MANAGEMENT_PORT: 8092
+      SPRING_PROFILE_ENV: test
+      PLAY_MODE: MANUAL
+      NEXT_PLAYER_BASE_URL: "http://player-1:8081"
+      RABBIT_QUEUE: "gameQueuePlayer-2"
+      RABBIT_ROUTING_KEY: "gameRoutingKeyPlayer-2"
+      RABBIT_EXHANGE: "gameExgangePlayer-2"

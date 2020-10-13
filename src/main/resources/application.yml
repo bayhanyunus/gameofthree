@@ -1,0 +1,43 @@
+server:
+  port: ${PORT:8080}
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8090}
+endpoints:
+  web:
+    base-path: /internal
+    exposure:
+      include: health,info
+
+spring:
+  application:
+    name: ${APP_NAME:player-1}
+
+takeaway:
+  assignment:
+    gameofthree:
+      service:
+        next-player:
+          base-url: ${NEXT_PLAYER_BASE_URL:http://localhost:8080}
+          connection-timeout-in-ms: ${CONNECTION_TIME_OUT_IN_MS:1000}
+          read-timeout-in-seconds: ${READ_TIME_OUT_IN_SEC:10}
+          write-timeout-in-seconds: ${READ_TIME_OUT_IN_SEC:10}
+          play:
+            uri: ${NEXT_PLAYER_URL:/game/play}
+            http-method: ${NEXT_PLAYER_HTTP_METHOD:POST}
+          end-game:
+            uri: ${END_GAME_URL:/game/endgame}
+            http-method: ${END_GAME_HTTP_METHOD:DELETE}
+        player-id: ${PLAYER_ID:1}
+        play-mode: ${PLAY_MODE:AUTOMATIC}
+        rabbit-mq:
+          host: ${RABBIT_HOST:localhost}
+          port: ${RABBIT_PORT:5672}
+          user: ${RABBIT_USER:gameUser}
+          password: ${RABBIT_PASSWORD:gameUserPassword}
+          exchange: ${RABBIT_EXHANGE:gameExgange}
+          routingKey: ${RABBIT_ROUTING_KEY:gameRoutingKey}
+          queue: ${RABBIT_QUEUE:gameQueue}
+        redis:
+          host: ${REDIS_HOST:localhost}
+          port: ${REDIS_PORT:6379}
